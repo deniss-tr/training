@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
+	"github.com/deniss-tr/training/internal/app/commands"
+	"github.com/deniss-tr/training/internal/service/day"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 )
@@ -31,15 +32,11 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
+	dayService := day.NewService()
+
+	commander := commands.NewCommander(bot, dayService)
+
 	for update := range updates {
-		if update.Message != nil { // If we got a message
-			log.Printf("TUUUT %s", update.Message.From.UserName)
-			log.Println(update.Message.From)
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("Hello %s let's go!", update.Message.From.FirstName))
-			// msg.ReplyToMessageID = update.Message.MessageID
-
-			bot.Send(msg)
-		}
+		commander.HandleUpdate(update)
 	}
 }
